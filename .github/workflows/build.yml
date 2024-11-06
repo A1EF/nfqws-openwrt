@@ -26,6 +26,8 @@ jobs:
         id: prepare
         shell: bash
         run : |
+          apt update
+          apt install -y jq
           TAG=$(wget -qO- 'https://api.github.com/repos/bol-van/zapret/releases/latest' | jq -r '.tag_name')
           sed -i "s|_VERSION_|${TAG/v}|" Makefile
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
@@ -53,6 +55,7 @@ jobs:
           BRANCH: ${{ matrix.branch }}
           LOGS_DIR: '/builder/logs'
         run: |
+          [ -d "${LOGS_DIR}" ] || mkdir "${LOGS_DIR}"
           tar cJvf "logs-${BRANCH}-${ARCH}.tar.xz" "${LOGS_DIR}"
 
       - name: Upload packages
