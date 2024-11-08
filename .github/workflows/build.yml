@@ -40,6 +40,7 @@ jobs:
           BRANCH: ${{ matrix.branch }}
         shell: bash
         run: |
+          cp -r .gnupg /github/home
           ./setup.sh
           echo "src-link nfqws $GITHUB_WORKSPACE" >> feeds.conf
           ./scripts/feeds update nfqws
