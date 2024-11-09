@@ -21,6 +21,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          repository: 'a1ef/nfqws-openwrt'
+          path: nfqws-openwrt
+
+      - name: Setup ccache
+        uses: actions/cache@v4
+        with:
+          path: '/builder/.ccache'
+          key: ccache-${{ matrix.arch }}-${{ matrix.branch }}-${{ github.run_id }}
+          restore-keys: |
+            ccache-${{ matrix.arch }}-${{ matrix.branch }}-
 
       - name: Prepare build
         id: prepare
@@ -34,15 +45,17 @@ jobs:
 
       - name: Build package
         id: build
-        working-directory: '/builder'
+        working-directory: /builder
         env:
           ARCH: ${{ matrix.arch }}
           BRANCH: ${{ matrix.branch }}
+          CCACHE_DIR: /builder/.ccache
         shell: bash
         run: |
           cp -r .gnupg /github/home
           ./setup.sh
           echo "src-link nfqws $GITHUB_WORKSPACE" >> feeds.conf
+          cp -r $GITHUB_WORKSPACE/nfqws-openwrt package/nfqws-openwrt/
           ./scripts/feeds update nfqws
           ./scripts/feeds install -ap nfqws
           make defconfig
@@ -65,7 +78,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ipk-${{ matrix.branch }}-${{ matrix.arch }}
-          path: ipk-${{ matrix.branch }}-${{ matrix.arch }}.tar
+          path: ./**/ipk-${{ matrix.branch }}-${{ matrix.arch }}.tar
           if-no-files-found: error
 
       - name: Upload build logs
@@ -73,7 +86,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: logs-${{ matrix.branch }}-${{ matrix.arch }}
-          path: logs-*.tar.xz
+          path: ./**/logs-*.tar.xz
 
   gh-pages:
     needs: build
