@@ -21,9 +21,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          repository: 'a1ef/nfqws-openwrt'
-          path: nfqws-openwrt
 
       - name: Setup ccache
         uses: actions/cache@v4
@@ -54,12 +51,11 @@ jobs:
         run: |
           cp -r .gnupg /github/home
           ./setup.sh
-          echo "src-link nfqws $GITHUB_WORKSPACE" >> feeds.conf
-          cp -r $GITHUB_WORKSPACE/nfqws-openwrt package/nfqws-openwrt/
-          ./scripts/feeds update nfqws
-          ./scripts/feeds install -ap nfqws
+          echo "src-link nfqws $GITHUB_WORKSPACE/nfqws-openwrt" > feeds.conf
+          scripts/feeds update nfqws
+          scripts/feeds install -ap nfqws
           make defconfig
-          make package/nfqws/compile V=s -j$(nproc) BUILD_LOG=1
+          make package/nfqws-openwrt/compile V=s -j$(nproc) BUILD_LOG=1
           make package/index
           tar cvf "${GITHUB_WORKSPACE}/ipk-${BRANCH}-${ARCH}.tar" -C bin/packages/*/nfqws --transform "s|^\./|${BRANCH/openwrt-}/${ARCH}/|" --show-transformed-names .
 
