@@ -9,12 +9,14 @@ PKG_SOURCE_URL:=https://github.com/bol-van/zapret/archive/refs/tags/
 PKG_HASH:=skip
 
 PKG_LICENSE:=MIT
-PKG_LICENSE_FILES:=LICENSE
+PKG_LICENSE_FILES:=docs/LICENSE.txt
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 PKG_BUILD_PARALLEL:=1
 
 include $(INCLUDE_DIR)/package.mk
+
+MAKE_PATH:=nfq
 
 define Package/$(PKG_NAME)
 	SECTION:=net
@@ -29,13 +31,18 @@ define Package/$(PKG_NAME)/description
 	DPI bypass packet modifier and a NFQUEUE queue handler. 
 endef
 
-define Package/$(PKG_NAME)/conffiles
-/etc/config/zapret
-endef
+#define Build/Prepare
+#	mkdir -p $(PKG_BUILD_DIR)
+#	$(CP) nfq/* $(PKG_BUILD_DIR)/
+#endef
 
 define Build/Prepare
-	mkdir -p $(PKG_BUILD_DIR)
-	$(CP) nfq/* $(PKG_BUILD_DIR)/
+	$(Build/Prepare/Default)
+	rm -f $(PKG_BUILD_DIR)/$(MAKE_PATH)/nfqws
+endef
+
+define Package/$(PKG_NAME)/conffiles
+/etc/config/zapret
 endef
 
 define Build/Compile
