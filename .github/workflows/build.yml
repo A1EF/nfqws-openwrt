@@ -51,10 +51,9 @@ jobs:
         run: |
           cp -r .gnupg /github/home
           ./setup.sh
-          echo "src-link nfqws $GITHUB_WORKSPACE" > feeds.conf
-          scripts/feeds update base packages
-          scripts/feeds install libnetfilter-queue zlib-dev libcap
-          scripts/feeds update nfqws
+          mv feeds.conf.default feeds.conf
+          echo "src-link nfqws $GITHUB_WORKSPACE" >> feeds.conf
+          scripts/feeds update -a
           scripts/feeds install -ap nfqws
           make defconfig
           make package/nfqws/compile V=s -j$(nproc) BUILD_LOG=1

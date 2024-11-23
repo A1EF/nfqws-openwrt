@@ -26,12 +26,12 @@ define Package/$(PKG_NAME)
 	SUBMENU:=Zapret
 	URL:=https://github.com/bol-van/zapret
 	DEPENDS:=+kmod-nft-queue
-	DEPENDS:=+libnetfilter-queue +libcap +zlib
-#	PKG_BUILD_DEPENDS:=libnetfilter-queue libcap zlib
+	DEPENDS:=+libcap +libnetfilter-queue +zlib
+#	PKG_BUILD_DEPENDS:=libcap libnetfilter-queue zlib
 endef
 
 define Package/$(PKG_NAME)/description
-	DPI bypass packet modifier and a NFQUEUE queue handler. 
+ DPI bypass packet modifier and a NFQUEUE queue handler.
 endef
 
 #define Build/Prepare
@@ -54,7 +54,7 @@ endef
 
 define Package/$(PKG_NAME)/install
 	$(INSTALL_DIR) $(1)/usr/sbin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/nfqws $(1)/usr/sbin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/$(MAKE_PATH)/nfqws $(1)/usr/sbin
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) files/nfqws $(1)/etc/init.d
 endef
