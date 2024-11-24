@@ -44,9 +44,9 @@ define Build/Prepare
 	rm -f $(PKG_BUILD_DIR)/$(MAKE_PATH)/nfqws
 endef
 
-define Package/$(PKG_NAME)/conffiles
-/etc/config/zapret
-endef
+#define Package/$(PKG_NAME)/conffiles
+#/etc/config/zapret
+#endef
 
 #define Build/Compile
 #	$(MAKE) -C $(PKG_BUILD_DIR) $(TARGET_CONFIGURE_OPTS)
