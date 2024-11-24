@@ -12,8 +12,7 @@ PKG_LICENSE:=MIT
 PKG_LICENSE_FILES:=docs/LICENSE.txt
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/zapret-$(PKG_VERSION)
-#PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
-#PKG_BUILD_PARALLEL:=1
+PKG_BUILD_PARALLEL:=1
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -34,11 +33,6 @@ define Package/$(PKG_NAME)/description
  DPI bypass packet modifier and a NFQUEUE queue handler.
 endef
 
-#define Build/Prepare
-#	mkdir -p $(PKG_BUILD_DIR)
-#	$(CP) nfq/* $(PKG_BUILD_DIR)/
-#endef
-
 define Build/Prepare
 	$(Build/Prepare/Default)
 	rm -f $(PKG_BUILD_DIR)/$(MAKE_PATH)/nfqws
@@ -48,13 +42,10 @@ define Package/$(PKG_NAME)/conffiles
 /etc/config/zapret
 endef
 
-#define Build/Compile
-#	$(MAKE) -C $(PKG_BUILD_DIR) $(TARGET_CONFIGURE_OPTS)
-#endef
-
 define Package/$(PKG_NAME)/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/$(MAKE_PATH)/nfqws $(1)/usr/sbin
+	$(INSTALL_DIR) $(1)/etc/config/zapret
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) files/nfqws $(1)/etc/init.d
 endef

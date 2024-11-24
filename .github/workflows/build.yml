@@ -57,7 +57,6 @@ jobs:
           scripts/feeds install -ap nfqws
           make defconfig
           make package/nfqws/compile V=s -j$(nproc) BUILD_LOG=1
-          make package/index
           tar cvf "${GITHUB_WORKSPACE}/ipk-${BRANCH}-${ARCH}.tar" -C bin/packages/*/nfqws --transform "s|^\./|${BRANCH/openwrt-}/${ARCH}/|" --show-transformed-names .
 
       - name: Compress build logs
