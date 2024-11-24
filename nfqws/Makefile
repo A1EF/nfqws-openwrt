@@ -25,8 +25,8 @@ define Package/$(PKG_NAME)
 	SUBMENU:=Zapret
 	URL:=https://github.com/bol-van/zapret
 	DEPENDS:=+kmod-nft-queue
-	DEPENDS:=+libcap +libnetfilter-queue +zlib
-#	PKG_BUILD_DEPENDS:=libcap libnetfilter-queue zlib
+#	DEPENDS:=+libcap +libnetfilter-queue +zlib
+	PKG_BUILD_DEPENDS:=libcap libnetfilter-queue zlib
 endef
 
 define Package/$(PKG_NAME)/description
