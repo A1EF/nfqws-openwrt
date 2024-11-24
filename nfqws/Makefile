@@ -25,6 +25,8 @@ define Package/$(PKG_NAME)
 	SUBMENU:=Zapret
 	URL:=https://github.com/bol-van/zapret
 	DEPENDS:=+libcap +libnetfilter-queue +zlib
+	PKG_BUILD_DEPENDS:=libnfnetlink0 libnetfilter-queue1 zlib
+	EXTRA_DEPENDS:=kmod-nft-queue
 endef
 
 define Package/$(PKG_NAME)/description
@@ -54,6 +56,7 @@ if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ "$${PKG_UPGRADE}" = "1" ]; then
 		[ -x "/etc/init.d/nfqws" ] && /etc/init.d/nfqws stop >/dev/null 2>&1
 	fi
+fi
 exit 0
 endef
 
@@ -61,7 +64,7 @@ define Package/$(PKG_NAME)/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
 	[ -f "/etc/config/zapret-hosts-users.txt" ] || touch /etc/config/zapret-hosts-users.txt
-	/etc/init.d/zapret start
+	/etc/init.d/nfqws start
 fi
 exit 0
 endef
@@ -69,8 +72,8 @@ endef
 define Package/$(PKG_NAME)/prerm
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-	/etc/init.d/nfqws disable
 	/etc/init.d/nfqws stop
+	/etc/init.d/nfqws disable
 fi
 exit 0
 endef
