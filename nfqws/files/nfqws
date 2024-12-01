@@ -5,16 +5,15 @@ STOP=10
 EXTRA_COMMANDS="status"
 
 SCRIPT=/usr/sbin/nfqws
-PIDFILE=/var/run/nfqws.pid
 
-ARGS="--daemon --pidfile $PIDFILE --hostlist=/etc/config/zapret-hosts-users.txt --qnum=200 --dpi-desync=split2 --dpi-desync-split-seqovl=1 --dpi-desync-ttl=5 --dpi-desync-fooling=badsum"
+CONFIG="/etc/config/zapret/nfqws.cfg"
 
 start() {
   if [ -f "$PIDFILE" ] && kill -0 $(cat "$PIDFILE"); then
     echo 'Service nfqws is already running' >&2
     return 1
   fi
-  $SCRIPT $ARGS
+  "$SCRIPT" @"$CONFIG"
   nft create table inet zapret
   nft add chain inet zapret post "{type filter hook postrouting priority mangle;}"
   nft add rule inet zapret post tcp dport "{80,443}" ct original packets 1-12 queue num 200 bypass
@@ -28,7 +27,7 @@ start() {
 }
 
 stop() {
-  nft delete table inet zapret
+  nft delete table inet zapret >/dev/null 2>&1 || :
   sysctl net.netfilter.nf_conntrack_tcp_be_liberal=0 >/dev/null
   if [ ! -f "$PIDFILE" ] || ! kill -0 $(cat "$PIDFILE"); then
     echo 'Service nfqws is not running' >&2

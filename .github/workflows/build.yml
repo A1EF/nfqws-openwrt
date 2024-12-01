@@ -1,7 +1,9 @@
 name: build
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - master
 
 jobs:
   build:
@@ -56,7 +58,7 @@ jobs:
           scripts/feeds update -a
           scripts/feeds install -ap nfqws
           make defconfig
-          make CFLAGS=-static package/nfqws/compile V=s -j$(nproc) BUILD_LOG=1
+          make package/nfqws/compile V=s -j$(nproc) BUILD_LOG=1
           tar cvf "${GITHUB_WORKSPACE}/ipk-${BRANCH}-${ARCH}.tar" -C bin/packages/*/nfqws --transform "s|^\./|${BRANCH/openwrt-}/${ARCH}/|" --show-transformed-names .
 
       - name: Compress build logs
@@ -84,33 +86,8 @@ jobs:
           name: logs-${{ matrix.branch }}-${{ matrix.arch }}
           path: ./**/logs-*.tar.xz
 
-  gh-pages:
-    needs: build
-    permissions:
-      contents: write
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          pattern: ipk-*
-
-      - name: Prepare files
-        run: |
-          mkdir public
-          find . -name 'ipk-*.tar' -exec tar xvf -C public {} \;
-
-      - name: Deploy to GH pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          user_name: 'github-actions[bot]'
-          user_email: 'github-actions[bot]@users.noreply.github.com'
-          full_commit_message: 'Deploy ${{ needs.build.outputs.tag }}'
-          force_orphan: true
-
   release:
-    needs: [build, gh-pages]
+    needs: [build]
     permissions:
       contents: write
     runs-on: ubuntu-latest

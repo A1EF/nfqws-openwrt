@@ -19,14 +19,13 @@ include $(INCLUDE_DIR)/package.mk
 MAKE_PATH:=nfq
 
 define Package/$(PKG_NAME)
-	SECTION:=net
-	CATEGORY:=Network
-	TITLE:=$(PKG_NAME)
-	SUBMENU:=Zapret
-	URL:=https://github.com/bol-van/zapret
-	DEPENDS:=+libcap +libnetfilter-queue +zlib
-	PKG_BUILD_DEPENDS:=libnfnetlink0 libnetfilter-queue1 zlib
-	EXTRA_DEPENDS:=kmod-nft-queue
+  SECTION:=net
+  CATEGORY:=Network
+  TITLE:=$(PKG_NAME)
+  SUBMENU:=Zapret
+  URL:=https://github.com/bol-van/zapret
+  PKG_BUILD_DEPENDS:=libcap libnetfilter-queue zlib
+  EXTRA_DEPENDS:=kmod-nft-queue
 endef
 
 define Package/$(PKG_NAME)/description
@@ -35,6 +34,7 @@ endef
 
 define Build/Prepare
 	$(Build/Prepare/Default)
+	sed -i 's/\(CFLAGS +=.*\)/\1 -static/' $(PKG_BUILD_DIR)/$(MAKE_PATH)/Makefile
 	rm -f $(PKG_BUILD_DIR)/$(MAKE_PATH)/nfqws
 endef
 
@@ -46,6 +46,7 @@ define Package/$(PKG_NAME)/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/$(MAKE_PATH)/nfqws $(1)/usr/sbin
 	$(INSTALL_DIR) $(1)/etc/config/zapret
+	$(INSTALL_CONF) files/nfqws.cfg $(1)/etc/config/zapret
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) files/nfqws $(1)/etc/init.d
 endef
@@ -63,7 +64,6 @@ endef
 define Package/$(PKG_NAME)/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-	[ -f "/etc/config/zapret-hosts-users.txt" ] || touch /etc/config/zapret-hosts-users.txt
 	/etc/init.d/nfqws start
 fi
 exit 0
@@ -72,8 +72,8 @@ endef
 define Package/$(PKG_NAME)/prerm
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-	/etc/init.d/nfqws stop
 	/etc/init.d/nfqws disable
+	/etc/init.d/nfqws stop
 fi
 exit 0
 endef
@@ -82,7 +82,7 @@ define Package/$(PKG_NAME)/postrm
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
 	[ -f "/etc/init.d/nfqws-opkg" ] && rm -f /etc/init.d/nfqws-opkg
-	[ -f "/etc/config/zapret-hosts-users.txt-opkg" ] && rm -f /etc/config/zapret-hosts-users.txt-opkg
+	[ -f "/etc/config/zapret/nfqws.cfg-opkg" ] && rm -f /etc/config/zapret/nfqws.cfg-opkg
 fi
 exit 0
 endef
