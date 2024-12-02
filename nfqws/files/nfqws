@@ -5,7 +5,7 @@ STOP=10
 EXTRA_COMMANDS="status"
 
 SCRIPT=/usr/sbin/nfqws
-
+PIDFILE=/var/run/nfqws.pid
 CONFIG="/etc/config/zapret/nfqws.cfg"
 
 start() {
@@ -13,26 +13,30 @@ start() {
     echo 'Service nfqws is already running' >&2
     return 1
   fi
-  "$SCRIPT" @"$CONFIG"
+
   nft create table inet zapret
   nft add chain inet zapret post "{type filter hook postrouting priority mangle;}"
-  nft add rule inet zapret post tcp dport "{80,443}" ct original packets 1-12 queue num 200 bypass
-  nft add rule inet zapret post udp dport 443 ct original packets 1-4 queue num 200 bypass
-
-  # auto hostlist with avoiding wrong ACK numbers in RST,ACK packets sent by russian DPI
-  sysctl net.netfilter.nf_conntrack_tcp_be_liberal=1 >/dev/null
+  nft add rule inet zapret post meta mark and 0x40000000 == 0 tcp dport "{80,443}" ct original packets 1-6 queue num 200 bypass
+  nft add rule inet zapret post meta mark and 0x40000000 == 0 udp dport 443 ct original packets 1-6 queue num 200 bypass
   nft add chain inet zapret pre "{type filter hook prerouting priority filter;}"
-  nft add rule inet zapret pre tcp sport "{80,443}" ct reply packets 1-4 queue num 200 bypass
+  nft add rule inet zapret pre tcp sport "{80,443}" ct reply packets 1-3 queue num 200 bypass
+
+  sysctl net.netfilter.nf_conntrack_tcp_be_liberal=1 >/dev/null
+
+  "$SCRIPT" @"$CONFIG"
+
   echo 'Started nfqws service'
 }
 
 stop() {
-  nft delete table inet zapret >/dev/null 2>&1 || :
-  sysctl net.netfilter.nf_conntrack_tcp_be_liberal=0 >/dev/null
   if [ ! -f "$PIDFILE" ] || ! kill -0 $(cat "$PIDFILE"); then
     echo 'Service nfqws is not running' >&2
     return 1
   fi
+
+  nft delete table inet zapret
+  sysctl net.netfilter.nf_conntrack_tcp_be_liberal=0 >/dev/null
+
   echo 'Stopping nfqws service...'
   kill -15 $(cat "$PIDFILE") && rm -f "$PIDFILE"
 }
