@@ -55,7 +55,7 @@ define Package/$(PKG_NAME)/preinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ "$${PKG_UPGRADE}" = "1" ]; then
-		[ -x "/etc/init.d/nfqws" ] && /etc/init.d/nfqws stop >/dev/null 2>&1
+		[ -x "/etc/init.d/nfqws" ] && /etc/init.d/nfqws stop
 	fi
 fi
 exit 0
@@ -64,7 +64,7 @@ endef
 define Package/$(PKG_NAME)/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-	/etc/init.d/nfqws start >/dev/null 2>&1
+	/etc/init.d/nfqws start
 fi
 exit 0
 endef
@@ -72,8 +72,8 @@ endef
 define Package/$(PKG_NAME)/prerm
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-	/etc/init.d/nfqws disable >/dev/null 2>&1
-	/etc/init.d/nfqws stop >/dev/null 2>&1
+	/etc/init.d/nfqws disable
+	/etc/init.d/nfqws stop
 fi
 exit 0
 endef

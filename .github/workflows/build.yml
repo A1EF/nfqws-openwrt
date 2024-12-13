@@ -16,7 +16,6 @@ jobs:
         arch:
           - aarch64_cortex-a53
           - mipsel_24kc
-          - x86_64
     container:
       image: openwrt/sdk:${{ matrix.arch }}-${{ matrix.branch }}
       options: --user root
