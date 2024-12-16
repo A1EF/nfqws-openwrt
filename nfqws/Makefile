@@ -64,7 +64,7 @@ endef
 define Package/$(PKG_NAME)/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
-	/etc/init.d/nfqws start
+	pgrep nfqws >/dev/null || /etc/init.d/nfqws start
 fi
 exit 0
 endef
@@ -73,7 +73,7 @@ define Package/$(PKG_NAME)/prerm
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
 	/etc/init.d/nfqws disable
-	/etc/init.d/nfqws stop
+	pgrep nfqws >/dev/null && /etc/init.d/nfqws stop
 fi
 exit 0
 endef
