@@ -64,6 +64,7 @@ endef
 define Package/$(PKG_NAME)/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
+	/etc/init.d/nfqws enable
 	pgrep nfqws >/dev/null || /etc/init.d/nfqws start
 fi
 exit 0
