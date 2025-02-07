@@ -55,7 +55,9 @@ define Package/$(PKG_NAME)/preinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
 	if [ "$${PKG_UPGRADE}" = "1" ]; then
-		[ -x "/etc/init.d/nfqws" ] && /etc/init.d/nfqws stop
+		if [ -x "/etc/init.d/nfqws" ]; then
+			pgrep nfqws >/dev/null && /etc/init.d/nfqws stop
+		fi
 	fi
 fi
 exit 0
