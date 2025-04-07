@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+  workflow_dispatch:
 
 jobs:
   build:
@@ -50,7 +51,6 @@ jobs:
           CCACHE_DIR: /builder/.ccache
         shell: bash
         run: |
-          cp -r .gnupg /github/home
           ./setup.sh
           mv feeds.conf.default feeds.conf
           echo "src-link nfqws $GITHUB_WORKSPACE" >> feeds.conf
