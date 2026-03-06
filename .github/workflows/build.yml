@@ -13,7 +13,9 @@ jobs:
       tag: ${{ steps.prepare.outputs.tag }}
     strategy:
       matrix:
-        branch: [openwrt-24.10]
+        branch:
+          - openwrt-24.10
+          - openwrt-25.12
         arch:
           - aarch64_cortex-a53
           - mipsel_24kc
@@ -22,10 +24,10 @@ jobs:
       options: --user root
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup ccache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: '/builder/.ccache'
           key: ccache-${{ matrix.arch }}-${{ matrix.branch }}-${{ github.run_id }}
@@ -36,8 +38,8 @@ jobs:
         id: prepare
         shell: bash
         run : |
-          apt update
-          apt install -y jq
+          apt-get update
+          apt-get install -y jq
           TAG=$(wget -qO- 'https://api.github.com/repos/bol-van/zapret/releases/latest' | jq -r '.tag_name')
           sed -i "s|_VERSION_|${TAG/v}|" "$GITHUB_WORKSPACE/nfqws/Makefile"
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
@@ -58,7 +60,10 @@ jobs:
           scripts/feeds install -ap nfqws
           make defconfig
           make package/nfqws/compile V=s -j$(nproc) BUILD_LOG=1
-          tar cvf "${GITHUB_WORKSPACE}/ipk-${BRANCH}-${ARCH}.tar" -C bin/packages/*/nfqws --transform "s|^\./|${BRANCH/openwrt-}/${ARCH}/|" --show-transformed-names .
+          for pkg in $(find -name 'nfqws-*.apk'); do
+            mv -v "$pkg" "${pkg%.apk}-${ARCH}.apk"
+          done
+          tar cvf "${GITHUB_WORKSPACE}/pkg-${BRANCH}-${ARCH}.tar" -C bin/packages/*/nfqws --transform "s|^\./|${BRANCH/openwrt-}/${ARCH}/|" --show-transformed-names .
 
       - name: Compress build logs
         if: always()
@@ -72,15 +77,15 @@ jobs:
 
       - name: Upload packages
         if: steps.build.outcome == 'success'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: ipk-${{ matrix.branch }}-${{ matrix.arch }}
-          path: ./**/ipk-${{ matrix.branch }}-${{ matrix.arch }}.tar
+          name: pkg-${{ matrix.branch }}-${{ matrix.arch }}
+          path: ./**/pkg-${{ matrix.branch }}-${{ matrix.arch }}.tar
           if-no-files-found: error
 
       - name: Upload build logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: logs-${{ matrix.branch }}-${{ matrix.arch }}
           path: ./**/logs-*.tar.xz
@@ -93,18 +98,20 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        branch: ['24.10']
+        branch:
+          - openwrt-24.10
+          - openwrt-25.12
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: ipk-*
+          pattern: pkg-*
 
       - name: Prepare files
         env:
           BRANCH: ${{ matrix.branch }}
         run: |
-          find . -name "ipk-openwrt-${BRANCH}-*.tar" -exec tar -xvf {} --wildcards '*.ipk' \;
+          find . -name "pkg-${BRANCH}-*.tar" -exec tar -xvf {} --wildcards '*pk' \;
 
       - name: Upload release assets
         uses: ncipollo/release-action@v1
@@ -113,4 +120,4 @@ jobs:
           prerelease: false
           tag: ${{ needs.build.outputs.tag }}-${{ matrix.branch }}
           name: ${{ needs.build.outputs.tag }} for OpenWrt ${{ matrix.branch }}
-          artifacts: ./**/*.ipk
+          artifacts: ./**/*pk

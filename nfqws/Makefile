@@ -25,7 +25,7 @@ define Package/$(PKG_NAME)
   SUBMENU:=Zapret
   URL:=https://github.com/bol-van/zapret
   PKG_BUILD_DEPENDS:=libcap libnetfilter-queue zlib
-  EXTRA_DEPENDS:=kmod-nft-queue
+  DEPENDS:=+kmod-nft-queue
 endef
 
 define Package/$(PKG_NAME)/description
@@ -49,6 +49,8 @@ define Package/$(PKG_NAME)/install
 	$(INSTALL_CONF) files/nfqws.cfg $(1)/etc/config/zapret
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) files/nfqws $(1)/etc/init.d
+	chmod 755 $(1)/etc/config/zapret
+	chmod 644 $(1)/etc/config/zapret/*
 endef
 
 define Package/$(PKG_NAME)/preinst
