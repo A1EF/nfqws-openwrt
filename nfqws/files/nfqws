@@ -39,7 +39,7 @@ stop() {
     return 1
   fi
 
-  nft delete table inet zapret
+  nft delete table inet zapret || true
   sysctl net.netfilter.nf_conntrack_tcp_be_liberal=0 >/dev/null
 
   echo 'Stopping nfqws service...'
